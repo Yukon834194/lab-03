@@ -3,7 +3,7 @@
 ## Student Details
 
 - **Full Name:** `Kuan Yu`
-- **CCID:** `Kuan4`
+- **CCID:** `kuan4`
 
 ## References and Resources
 
