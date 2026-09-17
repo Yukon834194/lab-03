@@ -25,17 +25,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.clickable
 
 @Composable
 fun CityListScreen(
     cities: List<City>,
     onAddCity: (City) -> Unit,
+    onUpdateCity: (City, City) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var newCityName by remember { mutableStateOf("") }
     var newProvinceName by remember { mutableStateOf("") }
     var showAddCityFields by remember { mutableStateOf(false) }
-
+    var selectedCity by remember { mutableStateOf<City?>(null) }
     Column(modifier = modifier.fillMaxSize()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -44,6 +46,9 @@ fun CityListScreen(
             FloatingActionButton(
                 modifier = Modifier.padding(16.dp),
                 onClick = {
+                    selectedCity = null
+                    newCityName = ""
+                    newProvinceName = ""
                     showAddCityFields = !showAddCityFields
                 }
             ) {
@@ -81,26 +86,45 @@ fun CityListScreen(
                         if (newCityName.isNotBlank() &&
                             newProvinceName.isNotBlank()
                         ) {
-                            onAddCity(
-                                City(
-                                    name = newCityName,
-                                    province = newProvinceName
-                                )
+                            val updatedCity = City(
+                                name = newCityName,
+                                province = newProvinceName
                             )
+
+                            val oldCity = selectedCity
+
+                            if (oldCity != null) {
+                                onUpdateCity(oldCity, updatedCity)
+                            } else {
+                                onAddCity(updatedCity)
+                            }
+
                             newCityName = ""
                             newProvinceName = ""
+                            selectedCity = null
                             showAddCityFields = false
                         }
                     }
                 ) {
-                    Text("Add City")
+                    Text(if (selectedCity != null) "Save" else "Add City")
                 }
             }
         }
 
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             itemsIndexed(cities) { index, city ->
-                CityRow(city = city)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            selectedCity = city
+                            newCityName = city.name
+                            newProvinceName = city.province
+                            showAddCityFields = true
+                        }
+                ) {
+                    CityRow(city = city)
+                }
 
                 if (index < cities.lastIndex) {
                     HorizontalDivider()
@@ -141,7 +165,8 @@ fun CityListScreenPreview() {
                 City("Vancouver", "BC"),
                 City("Calgary", "AB")
             ),
-            onAddCity = {}
+            onAddCity = {},
+            onUpdateCity = { _, _ -> }
         )
     }
 }
